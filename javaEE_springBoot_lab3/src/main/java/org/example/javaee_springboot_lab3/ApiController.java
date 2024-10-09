@@ -1,43 +1,64 @@
 package org.example.javaee_springboot_lab3;
-
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-//import javax.validation.constraints.Min;
-//import javax.validation.constraints.NotEmpty;
+import java.util.HashMap;
 
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class ApiController {
 
-    // first task
-    @PostMapping("/books")
-    public ResponseEntity<Map<String, String>>
-    addBook(@RequestBody Map<String, String> bookData) {
-        bookData.put("status", "received");
-        return ResponseEntity.ok(bookData);
+
+    HashMap<Integer, UserData> users = new HashMap<>();
+
+    // create user
+    @PostMapping("/user/create")
+    public ResponseEntity<UserData> createUser(@Valid @RequestBody UserData userData) {
+        users.put(userData.getId(), userData);
+        return new ResponseEntity<>(userData, HttpStatus.CREATED);
     }
 
-    // second task
-    @PutMapping("/user/{id}")
-    public ResponseEntity<Map<String, Object>>
-    updateUser(@PathVariable("id") int userId, @RequestBody Map<String, Object> userData) {
-        userData.put("id", userId);
-        return ResponseEntity.ok(userData);
+    // delete user by id
+    @DeleteMapping("/user/delete/{id}")
+    public ResponseEntity<UserData> deleteUser(@PathVariable Integer id) {
+        users.remove(id);
+        return new ResponseEntity<>(users.get(id), HttpStatus.OK);
     }
 
-    // third task
-    @DeleteMapping("/user/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable("id") int id) {
-        return ResponseEntity.ok("deleted");
+
+
+    // get user by id
+    @GetMapping("/user/get/{id}")
+    public ResponseEntity<?> getUser(@PathVariable int id) {
+        UserData user = users.get(id);
+
+        if (user != null) {
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
     }
 
-    // fours task
+    //get all users
+    @GetMapping("/user/get")
+    public ResponseEntity<?> getUser() {
 
-    // fives task
+        return new ResponseEntity<>(users.values(), HttpStatus.OK);
+
+    }
+
+
+    //update user
+    @PutMapping("/user/update/{id}")
+    public ResponseEntity<UserData> updateUser(@PathVariable int id, @RequestBody UserData userData) {
+        users.get(id).setName(userData.getName());
+        users.get(id).setAge(userData.getAge());
+        return new ResponseEntity<>(users.get(id), HttpStatus.OK);
+    }
+
+    // fives task - exception
     @GetMapping("/exception")
     public ResponseEntity<String> exception() {
         throw new RuntimeException("intentional exception");
